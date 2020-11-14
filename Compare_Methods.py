@@ -5,8 +5,8 @@ import matplotlib.pyplot as plt
 n_0 = 0.428
 alpha = np.pi * n_0
 # alpha = 0
-H = 4
-Gamma = 0.1
+# H = 4
+# Gamma = 0.1
 e_s = 3.9
 z_0 = 3
 Q = 1
@@ -166,7 +166,8 @@ def main():
     # plt.savefig('figure1.png')
     # plt.close(fig1)
 
-    fig2, axes2 = plt.subplots(2, 2, sharex='col', sharey='row')
+    fig2, axes2 = plt.subplots(2, 3)
+    fig2.set_size_inches(23, 12)
     # Figure 2 :
     for index1, gamma in enumerate(gamma1):
         print('processing gamma {}/3'.format(index1 + 1))
@@ -176,28 +177,45 @@ def main():
             force_im = []
             force_stp_new = []
             force_im_new = []
+            diff_stp = []
+            diff_im = []
 
             for vx in velocity_lst:
-                force_stp.append(f_stp(vx, gamma, h))
-                force_im.append(f_im(vx, gamma, h))
-                force_stp_new.append(0.05)  # f_stp_new(vx, gamma, h))
-                force_im_new.append(0.05)   # f_im_new(vx, gamma, h))
+                fstped = f_stp(vx, gamma, h)
+                fim = f_im(vx, gamma, h)
+                fstped_new = f_stp_new(vx, gamma, h)
+                fim_new = f_im_new(vx, gamma, h)
+                force_stp.append(fstped)
+                force_im.append(fim)
+                force_stp_new.append(fstped_new)
+                force_im_new.append(fim_new)
+                diff_stp.append(abs(fstped - fstped_new))
+                diff_im.append(abs(fim - fim_new))
 
             force_im = -1 * np.array(force_im)
             force_stp = -1 * np.array(force_stp)
             force_im_new = -1 * np.array(force_im_new)
             force_stp_new = -1 * np.array(force_stp_new)
+            diff_stp = np.array(diff_stp)
+            diff_im = np.array(diff_im)
 
             axes2[0, 0].plot(velocity_lst, force_stp, linestyle='--', label='gamma, h = {},{}'.format(gamma, h))
             axes2[1, 0].plot(velocity_lst, force_im, linestyle='--')
             axes2[0, 1].plot(velocity_lst, force_stp_new, linestyle='--')
             axes2[1, 1].plot(velocity_lst, force_im_new, linestyle='--')
+            axes2[0, 2].plot(velocity_lst, diff_stp, linestyle='--')
+            axes2[1, 2].plot(velocity_lst, diff_im, linestyle='--')
 
     fig2.suptitle('Stopping and Image Force over velocity (h = 8 a.u)')
     axes2.flat[0].set(ylabel='F_stopping')
-    axes2.flat[2].set(xlabel='Velocity (a.u)', ylabel='F_image')
+    axes2.flat[3].set(xlabel='Velocity (a.u)', ylabel='F_image')
+    axes2.flat[1].set(ylabel='F_stopping')
+    axes2.flat[4].set(xlabel='Velocity (a.u)', ylabel='F_image')
+    axes2.flat[2].set(ylabel='abs diff F_stp')
+    axes2.flat[5].set(xlabel='Velocity (a.u)', ylabel='abs diff F_im')
     axes2[0, 0].set_title('Integrated kx, ky as in paper')
     axes2[0, 1].set_title('Integrated k,w using K.K.Rs')
+    axes2[0, 2].set_title('Abs difference between two methods')
     fig2.legend()
     plt.savefig('CompareMethods_test.png')
     plt.close(fig2)
