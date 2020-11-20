@@ -12,6 +12,12 @@ z_0 = 3
 Q = 1
 
 
+def get_f_im_0(h):
+    const = -1 * (Q ** 2) / (4 * (z_0 + h)**2)
+    const2 = (e_s - 1) / (e_s + 1)
+    return const * const2
+
+
 def chi(kx, ky, vx, gamma):
     k_sqrd = kx**2 + ky**2
 
@@ -116,8 +122,9 @@ def f_im_new(v, gamma, h):
     pre_factor = 2 * (Q ** 2) / np.pi
     result = integrate.dblquad(lambda dw, dk: f_im_integrand_new(dk, dw, v, gamma, h),
                                0, np.inf, lambda k: k*v, lambda k: np.inf, epsabs=1.49e-04, epsrel=1.49e-04)
+    f_im_0 = get_f_im_0(h)
 
-    return pre_factor * result[0]
+    return pre_factor * result[0] + f_im_0
 
 
 def f_stp_integrand_new(k, w, v, gamma, h):
@@ -166,8 +173,10 @@ def main():
     # plt.savefig('figure1.png')
     # plt.close(fig1)
 
-    fig2, axes2 = plt.subplots(2, 3)
+    fig2, axes2 = plt.subplots(2, 2, sharey="row", sharex="col")
+    fig3, axes3 = plt.subplots(2, 1)
     fig2.set_size_inches(23, 12)
+    fig2.set_size_inches(15, 12)
     # Figure 2 :
     for index1, gamma in enumerate(gamma1):
         print('processing gamma {}/3'.format(index1 + 1))
@@ -203,22 +212,25 @@ def main():
             axes2[1, 0].plot(velocity_lst, force_im, linestyle='--')
             axes2[0, 1].plot(velocity_lst, force_stp_new, linestyle='--')
             axes2[1, 1].plot(velocity_lst, force_im_new, linestyle='--')
-            axes2[0, 2].plot(velocity_lst, diff_stp, linestyle='--')
-            axes2[1, 2].plot(velocity_lst, diff_im, linestyle='--')
+            axes3[0].plot(velocity_lst, diff_stp, linestyle='--')
+            axes3[1].plot(velocity_lst, diff_im, linestyle='--')
 
-    fig2.suptitle('Stopping and Image Force over velocity (h = 8 a.u)')
+    # fig2.title('Stopping and Image Force over velocity (h = 8 a.u)')
     axes2.flat[0].set(ylabel='F_stopping')
-    axes2.flat[3].set(xlabel='Velocity (a.u)', ylabel='F_image')
+    axes2.flat[2].set(xlabel='Velocity (a.u)', ylabel='F_image')
     axes2.flat[1].set(ylabel='F_stopping')
-    axes2.flat[4].set(xlabel='Velocity (a.u)', ylabel='F_image')
-    axes2.flat[2].set(ylabel='abs diff F_stp')
-    axes2.flat[5].set(xlabel='Velocity (a.u)', ylabel='abs diff F_im')
+    axes2.flat[3].set(xlabel='Velocity (a.u)', ylabel='F_image')
+    axes3.flat[0].set(ylabel='abs diff F_stp')
+    axes3.flat[1].set(xlabel='Velocity (a.u)', ylabel='abs diff F_im')
     axes2[0, 0].set_title('Integrated kx, ky as in paper')
     axes2[0, 1].set_title('Integrated k,w using K.K.Rs')
-    axes2[0, 2].set_title('Abs difference between two methods')
+    # axes3.title('Abs difference between two methods')
     fig2.legend()
-    plt.savefig('CompareMethods_test.png')
+    fig2.savefig('CompareMethods_new.png')
+    fig3.legend()
+    fig3.savefig('CompareMetods_new_error.png')
     plt.close(fig2)
+    plt.close(fig3)
 
     print('Done!')
 
